@@ -1,5 +1,6 @@
 import java.lang.reflect.Array;
 import java.util.HashSet;
+import java.util.Objects;
 import java.util.Set;
 
 public class Ligne {
@@ -42,6 +43,22 @@ public class Ligne {
         return tempsDAttente;
     }
 
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) {
+            return true;
+        }
+        if (o == null || getClass() != o.getClass()) {
+            return false;
+        }
+        Ligne ligne = (Ligne) o;
+        return identifiant == ligne.identifiant;
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(identifiant);
+    }
 
     @Override
     public String toString() {
