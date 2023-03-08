@@ -48,15 +48,15 @@ public class Graph {
               ligneDuTroncon = ligne;
               Troncon tronCree = new Troncon(ligneDuTroncon, array[1],
                   array[2], Integer.parseInt(array[3]));
-                if (listeDAdjacence.get(tronCree.getDepart()) == null) {
-                    Set<Troncon> tronconsSet = new HashSet<>();
-                    tronconsSet.add(tronCree);
-                    listeDAdjacence.put(tronCree.getDepart(), tronconsSet);
+              if (listeDAdjacence.get(tronCree.getDepart()) == null) {
+                Set<Troncon> tronconsSet = new HashSet<>();
+                tronconsSet.add(tronCree);
+                listeDAdjacence.put(tronCree.getDepart(), tronconsSet);
 
-                } else {
-                    listeDAdjacence.get(tronCree.getDepart()).add(tronCree);
-                }
-                line = reader.readLine();
+              } else {
+                listeDAdjacence.get(tronCree.getDepart()).add(tronCree);
+              }
+              line = reader.readLine();
             }
 
           }
@@ -79,9 +79,9 @@ public class Graph {
     while (!stationsDejaAtteintes.containsKey(station2)) {
       Set<Troncon> ensembleTroncons = listeDAdjacence.get(sommetCourant);
       for (Troncon troncon : ensembleTroncons) {
-          if (stationsDejaAtteintes.containsKey(troncon.getArrivee())) {
-              continue;
-          }
+        if (stationsDejaAtteintes.containsKey(troncon.getArrivee())) {
+          continue;
+        }
         file.add(troncon.getArrivee());
         stationsDejaAtteintes.put(troncon.getArrivee(), troncon);
       }
@@ -89,7 +89,6 @@ public class Graph {
     }
 
     List<Troncon> cheminPlusCourt = new ArrayList<>();
-
     String parcouru = station2;
     while (!stationsDejaAtteintes.get(parcouru).getDepart().equals(station1)) {
       cheminPlusCourt.add(stationsDejaAtteintes.get(parcouru));
@@ -97,21 +96,24 @@ public class Graph {
     }
     cheminPlusCourt.add(stationsDejaAtteintes.get(parcouru));
 
+    printCheminMinimisantNombreTroncons(cheminPlusCourt);
+  }
 
+  public void printCheminMinimisantNombreTroncons(List<Troncon> cheminPlusCourt) {
     int dureeTransport = 0;
-    int dureeTotale = cheminPlusCourt.get(cheminPlusCourt.size()-1).getLigne().getTempsDAttente();
-    for(int i = cheminPlusCourt.size() - 1; i >= 0; i--){
+    int dureeAttente = cheminPlusCourt.get(cheminPlusCourt.size() - 1).getLigne()
+        .getTempsDAttente();
+    for (int i = cheminPlusCourt.size() - 1; i >= 0; i--) {
       dureeTransport += cheminPlusCourt.get(i).getDuree();
-      if(i<cheminPlusCourt.size()-1 && !cheminPlusCourt.get(i).getLigne().equals(cheminPlusCourt.get(i+1).getLigne())){
-        dureeTotale += cheminPlusCourt.get(i).getLigne().getTempsDAttente();
+      if (i < cheminPlusCourt.size() - 1 && !cheminPlusCourt.get(i).getLigne()
+          .equals(cheminPlusCourt.get(i + 1).getLigne())) {
+        dureeAttente += cheminPlusCourt.get(i).getLigne().getTempsDAttente();
       }
       System.out.println(cheminPlusCourt.get(i));
     }
     System.out.println("nbTroncons=" + cheminPlusCourt.size());
-    System.out.println("dureeTransport="+dureeTransport+ " dureeTotale=" + (dureeTotale+dureeTransport));
-
-
-
+    System.out.println(
+        "dureeTransport=" + dureeTransport + " dureeTotale=" + (dureeAttente + dureeTransport));
   }
 
   public void calculerCheminMinimisantTempsTransport(String station1, String station2) {
