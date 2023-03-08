@@ -2,12 +2,16 @@ import java.io.*;
 import java.util.*;
 
 public class Graph {
-    private Scanner scanner;
 
     private Set<Ligne> ensembleLignes = new HashSet<>();
     private Map<String, Set<Troncon>> mapStationTroncon = new HashMap<>();
 
     public Graph(File ligne, File troncon) {
+        creerEnsembleLignes(ligne);
+        creerMapTronconStation(troncon);
+    }
+
+    public void creerEnsembleLignes(File ligne){
         try (FileReader lignes = new FileReader(ligne)){
             BufferedReader readerLigne = new BufferedReader (lignes);
 
@@ -17,7 +21,7 @@ public class Graph {
                 while (line != null) {
                     String[] array = line.split(",");
                     Ligne ligneCree = new Ligne(Integer.parseInt(array[0]), Integer.parseInt(array[1]),
-                            array[2], array[3], array[4], Integer.parseInt(array[5]));
+                        array[2], array[3], array[4], Integer.parseInt(array[5]));
                     ensembleLignes.add(ligneCree);
 
                 }
@@ -31,7 +35,9 @@ public class Graph {
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
+    }
 
+    public void creerMapTronconStation(File troncon){
         try (FileReader troncons = new FileReader(troncon)) {
             BufferedReader reader = new BufferedReader (troncons);
             String line;
@@ -40,7 +46,7 @@ public class Graph {
                 while (line != null) {
                     String[] array = line.split(",");
                     Troncon tronCree = new Troncon(Integer.parseInt(array[0]),array[1],
-                            array[2], Integer.parseInt(array[3]));
+                        array[2], Integer.parseInt(array[3]));
                     if (mapStationTroncon.get(tronCree.getDepart()) == null) {
                         Set<Troncon> tronconsSet = new HashSet<>();
                         tronconsSet.add(tronCree);
@@ -56,7 +62,6 @@ public class Graph {
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
-
     }
 
     public void calculerCheminMinimisantNombreTroncons(String station1, String station2) {
