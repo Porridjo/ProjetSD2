@@ -46,15 +46,22 @@ public class Graph {
             Ligne ligneDuTroncon;
             if (ligne.getIdentifiant() == (Integer.parseInt(array[0]))) {
               ligneDuTroncon = ligne;
-              Troncon tronCree = new Troncon(ligneDuTroncon, array[1],
+              Troncon tronconCree = new Troncon(ligneDuTroncon, array[1],
                   array[2], Integer.parseInt(array[3]));
-              if (listeDAdjacence.get(tronCree.getDepart()) == null) {
-                Set<Troncon> tronconsSet = new HashSet<>();
-                tronconsSet.add(tronCree);
-                listeDAdjacence.put(tronCree.getDepart(), tronconsSet);
 
+              if (listeDAdjacence.get(tronconCree.getDepart()) == null) {
+                Set<Troncon> tronconsSet = new HashSet<>();
+                tronconsSet.add(tronconCree);
+                listeDAdjacence.put(tronconCree.getDepart(), tronconsSet);
               } else {
-                listeDAdjacence.get(tronCree.getDepart()).add(tronCree);
+                listeDAdjacence.get(tronconCree.getDepart()).add(tronconCree);
+              }
+              if (listeDAdjacence.get(tronconCree.getArrivee()) == null) {
+                Set<Troncon> tronconsSet = new HashSet<>();
+                tronconsSet.add(tronconCree);
+                listeDAdjacence.put(tronconCree.getArrivee(), tronconsSet);
+              } else {
+                listeDAdjacence.get(tronconCree.getArrivee()).add(tronconCree);
               }
               line = reader.readLine();
             }
@@ -69,6 +76,26 @@ public class Graph {
       throw new RuntimeException(e);
     }
   }
+
+  private void creerMap(File troncon) {
+    try (FileReader troncons = new FileReader(troncon)) {
+      BufferedReader reader = new BufferedReader(troncons);
+      String line;
+      try {
+        line = reader.readLine();
+        while (line != null) {
+          String[] array = line.split(",");
+
+
+        }
+      } catch (IOException e) {
+        throw new RuntimeException(e);
+      }
+    } catch (IOException e) {
+      throw new RuntimeException(e);
+    }
+  }
+
 
   public void calculerCheminMinimisantNombreTroncons(String station1, String station2) {
     Deque<String> file = new ArrayDeque<>();
@@ -118,6 +145,49 @@ public class Graph {
 
   public void calculerCheminMinimisantTempsTransport(String station1, String station2) {
     // TODO
+    Map<String, Integer> mapEtiquetteProvisoire = new HashMap<>();
+    Map<String, Integer> mapEtiquetteDefinitive = new HashMap<>();
+    Map<String, Troncon> mapStationPrecedente = new HashMap<>();
+    Set<String> stationsParcourues = new HashSet<>();
+
+    String stationCourante = station1;
+
+    while (!stationsParcourues.contains(station2)) {
+      Set<Troncon> ensembleTroncons = listeDAdjacence.get(stationCourante);
+      if (ensembleTroncons == null) {
+        break;
+      }
+      stationsParcourues.add(station1);
+      for (Troncon troncon : ensembleTroncons) {
+        if (mapEtiquetteProvisoire.get(troncon.getArrivee()) == null) {
+          mapEtiquetteProvisoire.put(troncon.getArrivee(), troncon.getDuree());
+        }
+      }
+      int coutMin = Integer.MAX_VALUE;
+      String stationMin = "";
+      for (String station : mapEtiquetteProvisoire.keySet()) {
+        System.out.println("rentre");
+        int cout = mapEtiquetteProvisoire.get(station);
+        if (cout < coutMin) {
+          coutMin = cout;
+          stationMin = station;
+        }
+      }
+      Set<Troncon> stationsAdjacentes = listeDAdjacence.get(stationCourante);
+      for (Troncon troncon : stationsAdjacentes) {
+        if (troncon.getArrivee().equals(stationMin)) {
+          mapStationPrecedente.put(stationMin, troncon);
+        }
+      }
+      mapEtiquetteDefinitive.put(stationMin, coutMin);
+      stationCourante = stationMin;
+    }
+    System.out.println("salut");
+    System.out.println(mapStationPrecedente.size());
+    while (!stationCourante.equals(station1)) {
+      System.out.println(mapStationPrecedente.get(stationCourante));
+      stationCourante = mapStationPrecedente.get(stationCourante).getDepart();
+    }
 
   }
 }
