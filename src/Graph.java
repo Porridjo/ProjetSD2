@@ -161,13 +161,14 @@ public class Graph {
       if (ensembleTronconsDepuisStationCourante == null) {
         break;
       }
-      // stationsParcourues.add(stationCourante);
       for (Troncon troncon : ensembleTronconsDepuisStationCourante) {
         if (mapEtiquetteProvisoire.get(troncon.getArrivee()) == null) {
           mapEtiquetteProvisoire.put(troncon.getArrivee(), troncon.getDuree());
         }
+        // else if si déjà un mais durée inférieure faut le changer
       }
 
+      // Recherche du minimum dans les étiquettes provisoires
       int coutMin = Integer.MAX_VALUE;
       String stationMin = "";
       for (String station : mapEtiquetteProvisoire.keySet()) {
