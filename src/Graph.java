@@ -144,37 +144,41 @@ public class Graph {
   }
 
   public void calculerCheminMinimisantTempsTransport(String station1, String station2) {
-    // TODO
     Map<String, Integer> mapEtiquetteProvisoire = new HashMap<>();
     Map<String, Integer> mapEtiquetteDefinitive = new HashMap<>();
     Map<String, Troncon> mapStationPrecedente = new HashMap<>();
-    Set<String> stationsParcourues = new HashSet<>();
+    // Set<String> stationsParcourues = new HashSet<>();    -> nécessaire?
+
+    // On met 0 dans les étiquettes définitives pr la station de départ
+    mapEtiquetteDefinitive.put(station1, 0);
 
     String stationCourante = station1;
+    while (mapEtiquetteDefinitive.get(station2) == null) {
+      // -1 = croix
+      mapEtiquetteProvisoire.put(stationCourante, -1);
 
-    while (!stationsParcourues.contains(station2)) {
-      Set<Troncon> ensembleTroncons = listeDAdjacence.get(stationCourante);
-      if (ensembleTroncons == null) {
+      Set<Troncon> ensembleTronconsDepuisStationCourante = listeDAdjacence.get(stationCourante);
+      if (ensembleTronconsDepuisStationCourante == null) {
         break;
       }
-      stationsParcourues.add(station1);
-      for (Troncon troncon : ensembleTroncons) {
+      // stationsParcourues.add(stationCourante);
+      for (Troncon troncon : ensembleTronconsDepuisStationCourante) {
         if (mapEtiquetteProvisoire.get(troncon.getArrivee()) == null) {
           mapEtiquetteProvisoire.put(troncon.getArrivee(), troncon.getDuree());
         }
       }
+
       int coutMin = Integer.MAX_VALUE;
       String stationMin = "";
       for (String station : mapEtiquetteProvisoire.keySet()) {
-        System.out.println("rentre");
         int cout = mapEtiquetteProvisoire.get(station);
         if (cout < coutMin) {
           coutMin = cout;
           stationMin = station;
         }
       }
-      Set<Troncon> stationsAdjacentes = listeDAdjacence.get(stationCourante);
-      for (Troncon troncon : stationsAdjacentes) {
+
+      for (Troncon troncon : ensembleTronconsDepuisStationCourante) {
         if (troncon.getArrivee().equals(stationMin)) {
           mapStationPrecedente.put(stationMin, troncon);
         }
@@ -182,8 +186,8 @@ public class Graph {
       mapEtiquetteDefinitive.put(stationMin, coutMin);
       stationCourante = stationMin;
     }
-    System.out.println("salut");
-    System.out.println(mapStationPrecedente.size());
+
+
     while (!stationCourante.equals(station1)) {
       System.out.println(mapStationPrecedente.get(stationCourante));
       stationCourante = mapStationPrecedente.get(stationCourante).getDepart();
