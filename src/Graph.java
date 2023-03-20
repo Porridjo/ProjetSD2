@@ -148,10 +148,12 @@ public class Graph {
     Map<String, Integer> mapEtiquetteDefinitive = new HashMap<>();
     Map<String, Troncon> mapStationPrecedente = new HashMap<>();
     Set<String> stationsParcourues = new HashSet<>();
+    List<Troncon> parcours = new ArrayList<>();
 
     // On met 0 dans les étiquettes définitives pr la station de départ
     mapEtiquetteDefinitive.put(station1, 0);
     String stationCourante = station1;
+
 
     while (mapEtiquetteDefinitive.get(station2) == null) {
       // -1 = croix
@@ -163,11 +165,20 @@ public class Graph {
         break;
       }
       for (Troncon troncon : ensembleTronconsDepuisStationCourante) {
-        if (mapEtiquetteProvisoire.get(troncon.getArrivee()) == null) {
-          mapEtiquetteProvisoire.put(troncon.getArrivee(), troncon.getDuree());
-        } else {
-          if (mapEtiquetteDefinitive.get(troncon.getArrivee()) + troncon.getDuree() < mapEtiquetteProvisoire.get(troncon.getArrivee())) {
-            mapEtiquetteProvisoire.put(troncon.getArrivee(), mapEtiquetteDefinitive.get(troncon.getDepart()) + troncon.getDuree());
+        if (!stationsParcourues.contains(troncon.getArrivee())) {
+          if (mapEtiquetteProvisoire.get(troncon.getArrivee()) == null) {
+            if (mapEtiquetteDefinitive.get(stationCourante) == null) {
+              mapEtiquetteProvisoire.put(troncon.getArrivee(), troncon.getDuree());
+              mapStationPrecedente.put(troncon.getArrivee(), troncon);
+            } else {
+              mapEtiquetteProvisoire.put(troncon.getArrivee(), mapEtiquetteDefinitive.get(stationCourante) + troncon.getDuree());
+              mapStationPrecedente.put(troncon.getArrivee(), troncon);
+            }
+          } else {
+            if (mapEtiquetteDefinitive.get(stationCourante) + troncon.getDuree() < mapEtiquetteProvisoire.get(troncon.getArrivee())) {
+              mapEtiquetteProvisoire.put(troncon.getArrivee(), mapEtiquetteDefinitive.get(stationCourante) + troncon.getDuree());
+              mapStationPrecedente.put(troncon.getArrivee(), troncon);
+            }
           }
         }
       }
@@ -185,7 +196,6 @@ public class Graph {
           stationMin = station;
         }
       }
-
       mapEtiquetteProvisoire.remove(stationMin);
 
       for (Troncon troncon : ensembleTronconsDepuisStationCourante) {
@@ -193,16 +203,17 @@ public class Graph {
           mapStationPrecedente.put(stationMin, troncon);
         }
       }
+
       mapEtiquetteDefinitive.put(stationMin, coutMin);
       stationCourante = stationMin;
     }
 
-    System.out.println(stationCourante);
-    System.out.println(mapStationPrecedente);
     while (!stationCourante.equals(station1)) {
-      System.out.println(mapStationPrecedente.get(stationCourante));
+      parcours.add(0, mapStationPrecedente.get(stationCourante));
       stationCourante = mapStationPrecedente.get(stationCourante).getDepart();
     }
+
+    printCheminMinimisantNombreTroncons(parcours);
 
   }
 }

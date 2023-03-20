@@ -35,7 +35,7 @@ public class Troncon {
             "depart='" + depart + '\'' +
             ", arrivee='" + arrivee + '\'' +
             ", duree=" + duree +
-            "ligne=" + ligne
+            ", ligne=" + ligne
             + "]";
     }
 }
