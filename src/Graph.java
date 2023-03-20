@@ -209,7 +209,7 @@ public class Graph {
     }
 
     while (!stationCourante.equals(station1)) {
-      parcours.add(0, mapStationPrecedente.get(stationCourante));
+      parcours.add(mapStationPrecedente.get(stationCourante));
       stationCourante = mapStationPrecedente.get(stationCourante).getDepart();
     }
 
