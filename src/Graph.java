@@ -144,21 +144,22 @@ public class Graph {
   }
 
   public void calculerCheminMinimisantTempsTransport(String station1, String station2) {
-    Map<String, Integer> mapEtiquetteProvisoire = new HashMap<>();
-    Map<String, Integer> mapEtiquetteDefinitive = new HashMap<>();
+
+    long startTime = System.nanoTime();
+
+    Map<String, Integer> etiquettesProvisoires = new HashMap<>();
+    Map<String, Integer> etiquettesDefinitives = new HashMap<>();
     Map<String, Troncon> mapStationPrecedente = new HashMap<>();
     Set<String> stationsParcourues = new HashSet<>();
     List<Troncon> parcours = new ArrayList<>();
 
-    // On met 0 dans les étiquettes définitives pr la station de départ
-    mapEtiquetteDefinitive.put(station1, 0);
+
+    etiquettesDefinitives.put(station1, 0);
     String stationCourante = station1;
 
 
-    while (mapEtiquetteDefinitive.get(station2) == null) {
-      // -1 = croix
+    while (etiquettesDefinitives.get(station2) == null) {
       stationsParcourues.add(stationCourante);
-      //mapEtiquetteProvisoire.put(stationCourante, -1);
 
       Set<Troncon> ensembleTronconsDepuisStationCourante = listeDAdjacence.get(stationCourante);
       if (ensembleTronconsDepuisStationCourante == null) {
@@ -166,17 +167,17 @@ public class Graph {
       }
       for (Troncon troncon : ensembleTronconsDepuisStationCourante) {
         if (!stationsParcourues.contains(troncon.getArrivee())) {
-          if (mapEtiquetteProvisoire.get(troncon.getArrivee()) == null) {
-            if (mapEtiquetteDefinitive.get(stationCourante) == null) {
-              mapEtiquetteProvisoire.put(troncon.getArrivee(), troncon.getDuree());
+          if (etiquettesProvisoires.get(troncon.getArrivee()) == null) {
+            if (etiquettesDefinitives.get(stationCourante) == null) {
+              etiquettesProvisoires.put(troncon.getArrivee(), troncon.getDuree());
               mapStationPrecedente.put(troncon.getArrivee(), troncon);
             } else {
-              mapEtiquetteProvisoire.put(troncon.getArrivee(), mapEtiquetteDefinitive.get(stationCourante) + troncon.getDuree());
+              etiquettesProvisoires.put(troncon.getArrivee(), etiquettesDefinitives.get(stationCourante) + troncon.getDuree());
               mapStationPrecedente.put(troncon.getArrivee(), troncon);
             }
           } else {
-            if (mapEtiquetteDefinitive.get(stationCourante) + troncon.getDuree() < mapEtiquetteProvisoire.get(troncon.getArrivee())) {
-              mapEtiquetteProvisoire.put(troncon.getArrivee(), mapEtiquetteDefinitive.get(stationCourante) + troncon.getDuree());
+            if (etiquettesDefinitives.get(stationCourante) + troncon.getDuree() < etiquettesProvisoires.get(troncon.getArrivee())) {
+              etiquettesProvisoires.put(troncon.getArrivee(), etiquettesDefinitives.get(stationCourante) + troncon.getDuree());
               mapStationPrecedente.put(troncon.getArrivee(), troncon);
             }
           }
@@ -186,17 +187,17 @@ public class Graph {
       // Recherche du minimum dans les étiquettes provisoires
       int coutMin = Integer.MAX_VALUE;
       String stationMin = "";
-      for (String station : mapEtiquetteProvisoire.keySet()) {
+      for (String station : etiquettesProvisoires.keySet()) {
         if (stationsParcourues.contains(station)) {
           continue;
         }
-        int cout = mapEtiquetteProvisoire.get(station);
+        int cout = etiquettesProvisoires.get(station);
         if (cout < coutMin) {
           coutMin = cout;
           stationMin = station;
         }
       }
-      mapEtiquetteProvisoire.remove(stationMin);
+      etiquettesProvisoires.remove(stationMin);
 
       for (Troncon troncon : ensembleTronconsDepuisStationCourante) {
         if (troncon.getArrivee().equals(stationMin) && troncon.getDepart().equals(stationCourante)) {
@@ -204,7 +205,7 @@ public class Graph {
         }
       }
 
-      mapEtiquetteDefinitive.put(stationMin, coutMin);
+      etiquettesDefinitives.put(stationMin, coutMin);
       stationCourante = stationMin;
     }
 
@@ -213,6 +214,10 @@ public class Graph {
       stationCourante = mapStationPrecedente.get(stationCourante).getDepart();
     }
 
+
+    long endTime = System.nanoTime();
+
+    System.out.println("temps: " + ((endTime - startTime)/1000) + " microsecondes");
     printCheminMinimisantNombreTroncons(parcours);
 
   }
