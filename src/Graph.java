@@ -4,7 +4,9 @@ import java.util.*;
 public class Graph {
 
   private Set<Ligne> ensembleLignes = new HashSet<>();
-  private Map<String, Set<Troncon>> listeDAdjacence = new HashMap<>();
+  private Map<String, Station> ensembleStations = new HashMap<>();
+  private Map<Station, Set<Troncon>> listeDAdjacence = new HashMap<>();
+
 
   public Graph(File ligne, File troncon) {
     creerEnsembleLignes(ligne);
@@ -15,82 +17,64 @@ public class Graph {
     try (FileReader lignes = new FileReader(ligne)) {
       BufferedReader readerLigne = new BufferedReader(lignes);
 
-      String line;
-      try {
+      String line = readerLigne.readLine();
+      while (line != null) {
+        String[] array = line.split(",");
+        Ligne ligneCree = new Ligne(Integer.parseInt(array[0]), array[1],
+            array[2], array[3], array[4], Integer.parseInt(array[5]));
+        ensembleLignes.add(ligneCree);
         line = readerLigne.readLine();
-        while (line != null) {
-          String[] array = line.split(",");
-          Ligne ligneCree = new Ligne(Integer.parseInt(array[0]), array[1],
-              array[2], array[3], array[4], Integer.parseInt(array[5]));
-          ensembleLignes.add(ligneCree);
-          line = readerLigne.readLine();
-        }
-      } catch (IOException e) {
-        throw new RuntimeException(e);
       }
+
     } catch (IOException e) {
       throw new RuntimeException(e);
     }
   }
 
   private void creerMapTronconStation(File troncon) {
+
     try (FileReader troncons = new FileReader(troncon)) {
       BufferedReader reader = new BufferedReader(troncons);
-      String line;
-      try {
-        line = reader.readLine();
-        while (line != null) {
-          String[] array = line.split(",");
 
-          for (Ligne ligne : ensembleLignes) {
-            Ligne ligneDuTroncon;
-            if (ligne.getIdentifiant() == (Integer.parseInt(array[0]))) {
-              ligneDuTroncon = ligne;
-              Troncon tronconCree = new Troncon(ligneDuTroncon, array[1],
-                  array[2], Integer.parseInt(array[3]));
+      String line = reader.readLine();
+      while (line != null) {
+        String[] array = line.split(",");
 
-              if (listeDAdjacence.get(tronconCree.getDepart()) == null) {
-                Set<Troncon> tronconsSet = new HashSet<>();
-                tronconsSet.add(tronconCree);
-                listeDAdjacence.put(tronconCree.getDepart(), tronconsSet);
-              } else {
-                listeDAdjacence.get(tronconCree.getDepart()).add(tronconCree);
-              }
-              if (listeDAdjacence.get(tronconCree.getArrivee()) == null) {
-                Set<Troncon> tronconsSet = new HashSet<>();
-                tronconsSet.add(tronconCree);
-                listeDAdjacence.put(tronconCree.getArrivee(), tronconsSet);
-              } else {
-                listeDAdjacence.get(tronconCree.getArrivee()).add(tronconCree);
-              }
-              line = reader.readLine();
+        for (Ligne ligne : ensembleLignes) {
+          Ligne ligneDuTroncon;
+          if (ligne.getIdentifiant() == (Integer.parseInt(array[0]))) {
+            ligneDuTroncon = ligne;
+            if (!ensembleStations.containsKey(array[1])) {
+              ensembleStations.put(array[1], new Station(array[1]));
+            }
+            if (!ensembleStations.containsKey(array[2])) {
+              ensembleStations.put(array[2], new Station(array[2]));
             }
 
+            Troncon tronconCree = new Troncon(ligneDuTroncon, ensembleStations.get(array[1]),
+                ensembleStations.get(array[2]), Integer.parseInt(array[3]));
+
+            if (listeDAdjacence.get(tronconCree.getStationDepart()) == null) {
+              Set<Troncon> tronconsSet = new HashSet<>();
+              tronconsSet.add(tronconCree);
+              listeDAdjacence.put(tronconCree.getStationDepart(), tronconsSet);
+            } else {
+              listeDAdjacence.get(tronconCree.getStationDepart()).add(tronconCree);
+            }
+            if (listeDAdjacence.get(tronconCree.getStationArrivee()) == null) {
+              Set<Troncon> tronconsSet = new HashSet<>();
+              tronconsSet.add(tronconCree);
+              listeDAdjacence.put(tronconCree.getStationArrivee(), tronconsSet);
+            } else {
+              listeDAdjacence.get(tronconCree.getStationArrivee()).add(tronconCree);
+            }
+            line = reader.readLine();
           }
 
         }
-      } catch (IOException e) {
-        throw new RuntimeException(e);
+
       }
-    } catch (IOException e) {
-      throw new RuntimeException(e);
-    }
-  }
 
-  private void creerMap(File troncon) {
-    try (FileReader troncons = new FileReader(troncon)) {
-      BufferedReader reader = new BufferedReader(troncons);
-      String line;
-      try {
-        line = reader.readLine();
-        while (line != null) {
-          String[] array = line.split(",");
-
-
-        }
-      } catch (IOException e) {
-        throw new RuntimeException(e);
-      }
     } catch (IOException e) {
       throw new RuntimeException(e);
     }
@@ -98,38 +82,136 @@ public class Graph {
 
 
   public void calculerCheminMinimisantNombreTroncons(String station1, String station2) {
-    Deque<String> file = new ArrayDeque<>();
-    Map<String, Troncon> stationsDejaAtteintes = new HashMap<>();
-    stationsDejaAtteintes.put(station1, null);
-    String sommetCourant = station1;
+    Deque<Station> file = new ArrayDeque<>();
+    Map<Station, Troncon> stationsDejaAtteintes = new HashMap<>();
+    stationsDejaAtteintes.put(ensembleStations.get(station1), null);
+    Station sommetCourant = ensembleStations.get(station1);
 
-    while (!stationsDejaAtteintes.containsKey(station2)) {
+    while (!stationsDejaAtteintes.containsKey(ensembleStations.get(station2))) {
       Set<Troncon> ensembleTroncons = listeDAdjacence.get(sommetCourant);
       for (Troncon troncon : ensembleTroncons) {
-        if (stationsDejaAtteintes.containsKey(troncon.getArrivee())) {
+        if (stationsDejaAtteintes.containsKey(troncon.getStationArrivee())) {
           continue;
         }
-        file.add(troncon.getArrivee());
-        stationsDejaAtteintes.put(troncon.getArrivee(), troncon);
+        file.add(troncon.getStationArrivee());
+        stationsDejaAtteintes.put(troncon.getStationArrivee(), troncon);
       }
       sommetCourant = file.pop();
     }
 
     List<Troncon> cheminPlusCourt = new ArrayList<>();
-    String parcouru = station2;
-    while (!stationsDejaAtteintes.get(parcouru).getDepart().equals(station1)) {
+    Station parcouru = ensembleStations.get(station2);
+    while (!stationsDejaAtteintes.get(parcouru).getStationDepart()
+        .equals(ensembleStations.get(station1))) {
       cheminPlusCourt.add(stationsDejaAtteintes.get(parcouru));
-      parcouru = stationsDejaAtteintes.get(parcouru).getDepart();
+      parcouru = stationsDejaAtteintes.get(parcouru).getStationDepart();
     }
     cheminPlusCourt.add(stationsDejaAtteintes.get(parcouru));
 
-    printCheminMinimisantNombreTroncons(cheminPlusCourt);
+    afficherChemin(cheminPlusCourt);
   }
 
-  public void printCheminMinimisantNombreTroncons(List<Troncon> cheminPlusCourt) {
+
+  public void calculerCheminMinimisantTempsTransport(String station1, String station2) {
+
+    long startTime = System.nanoTime();
+
+    Set<Station> etiquettesProvisoires = new TreeSet<>(
+        Comparator.comparingInt(Station::getEtiquette));
+    Set<Station> etiquettesDefinitives = new HashSet<>();
+    Map<Station, Troncon> mapStationPrecedente = new HashMap<>();
+    Set<Station> stationsParcourues = new HashSet<>();
+
+    Station stationDepart = ensembleStations.get(station1);
+    stationDepart.setEtiquette(0);
+    etiquettesDefinitives.add(stationDepart);
+    Station stationArrivee = ensembleStations.get(station2);
+
+    Station stationCourante = stationDepart;
+
+    while (!etiquettesDefinitives.contains(stationArrivee)) {
+      stationsParcourues.add(stationCourante);
+
+      Set<Troncon> ensembleTronconsDepuisStationCourante = listeDAdjacence.get(stationCourante);
+
+      if (ensembleTronconsDepuisStationCourante == null) {
+        break;
+      }
+
+      for (Troncon troncon : ensembleTronconsDepuisStationCourante) {
+        if (!stationsParcourues.contains(troncon.getStationArrivee())) {
+          if (!etiquettesProvisoires.contains(troncon.getStationArrivee())) {
+            Station newStation = troncon.getStationArrivee();
+            if (!etiquettesDefinitives.contains(stationCourante)) {
+              newStation.setEtiquette(troncon.getDuree());
+            } else {
+              newStation.setEtiquette(stationCourante.getEtiquette() + troncon.getDuree());
+            }
+            etiquettesProvisoires.add(newStation);
+            mapStationPrecedente.put(newStation, troncon);
+          } else if (stationCourante.getEtiquette() + troncon.getDuree()
+              < troncon.getStationArrivee()
+              .getEtiquette()) {
+            Station newStation = troncon.getStationArrivee();
+            newStation.setEtiquette(stationCourante.getEtiquette() + troncon.getDuree());
+            mapStationPrecedente.put(newStation, troncon);
+          }
+        }
+      }
+
+      // Recherche du minimum dans les étiquettes provisoires
+      int coutMin = Integer.MAX_VALUE;
+      Station stationMin = new Station("placeholder");
+      for (Station station : etiquettesProvisoires) {
+        if (stationsParcourues.contains(station)) {
+          continue;
+        }
+        int cout = station.getEtiquette();
+        if (cout < coutMin) {
+          coutMin = cout;
+          stationMin = station;
+        }
+      }
+      etiquettesProvisoires.remove(stationMin);
+
+      for (Troncon troncon : ensembleTronconsDepuisStationCourante) {
+        if (troncon.getStationArrivee().equals(stationMin) && troncon.getStationDepart()
+            .equals(stationCourante)) {
+          mapStationPrecedente.put(stationMin, troncon);
+        }
+      }
+
+      stationMin.setEtiquette(coutMin);
+      etiquettesDefinitives.add(stationMin);
+      stationCourante = stationMin;
+    }
+
+    System.out.println("etiquettes contient la station arrivée : " + etiquettesDefinitives.contains(
+        ensembleStations.get(station1)));
+    System.out.println("taille : " + mapStationPrecedente.size() + " " + mapStationPrecedente);
+
+    List<Troncon> parcours = new ArrayList<>();
+
+    System.out.println(stationCourante);
+
+    while (!stationCourante.equals(ensembleStations.get(station1))) {
+      parcours.add(mapStationPrecedente.get(stationCourante));
+      stationCourante = mapStationPrecedente.get(stationCourante).getStationDepart();
+    }
+
+    long endTime = System.nanoTime();
+
+    System.out.println("temps: " + ((endTime - startTime) / 1000) + " microsecondes");
+    afficherChemin(parcours);
+
+  }
+
+
+  public void afficherChemin(List<Troncon> cheminPlusCourt) {
     int dureeTransport = 0;
     int dureeAttente = cheminPlusCourt.get(cheminPlusCourt.size() - 1).getLigne()
         .getTempsDAttente();
+
     for (int i = cheminPlusCourt.size() - 1; i >= 0; i--) {
       dureeTransport += cheminPlusCourt.get(i).getDuree();
       if (i < cheminPlusCourt.size() - 1 && !cheminPlusCourt.get(i).getLigne()
@@ -141,84 +223,5 @@ public class Graph {
     System.out.println("nbTroncons=" + cheminPlusCourt.size());
     System.out.println(
         "dureeTransport=" + dureeTransport + " dureeTotale=" + (dureeAttente + dureeTransport));
-  }
-
-  public void calculerCheminMinimisantTempsTransport(String station1, String station2) {
-
-    long startTime = System.nanoTime();
-
-    Map<String, Integer> etiquettesProvisoires = new HashMap<>();
-    Map<String, Integer> etiquettesDefinitives = new HashMap<>();
-    Map<String, Troncon> mapStationPrecedente = new HashMap<>();
-    Set<String> stationsParcourues = new HashSet<>();
-    List<Troncon> parcours = new ArrayList<>();
-
-
-    etiquettesDefinitives.put(station1, 0);
-    String stationCourante = station1;
-
-
-    while (etiquettesDefinitives.get(station2) == null) {
-      stationsParcourues.add(stationCourante);
-
-      Set<Troncon> ensembleTronconsDepuisStationCourante = listeDAdjacence.get(stationCourante);
-      if (ensembleTronconsDepuisStationCourante == null) {
-        break;
-      }
-      for (Troncon troncon : ensembleTronconsDepuisStationCourante) {
-        if (!stationsParcourues.contains(troncon.getArrivee())) {
-          if (etiquettesProvisoires.get(troncon.getArrivee()) == null) {
-            if (etiquettesDefinitives.get(stationCourante) == null) {
-              etiquettesProvisoires.put(troncon.getArrivee(), troncon.getDuree());
-              mapStationPrecedente.put(troncon.getArrivee(), troncon);
-            } else {
-              etiquettesProvisoires.put(troncon.getArrivee(), etiquettesDefinitives.get(stationCourante) + troncon.getDuree());
-              mapStationPrecedente.put(troncon.getArrivee(), troncon);
-            }
-          } else {
-            if (etiquettesDefinitives.get(stationCourante) + troncon.getDuree() < etiquettesProvisoires.get(troncon.getArrivee())) {
-              etiquettesProvisoires.put(troncon.getArrivee(), etiquettesDefinitives.get(stationCourante) + troncon.getDuree());
-              mapStationPrecedente.put(troncon.getArrivee(), troncon);
-            }
-          }
-        }
-      }
-
-      // Recherche du minimum dans les étiquettes provisoires
-      int coutMin = Integer.MAX_VALUE;
-      String stationMin = "";
-      for (String station : etiquettesProvisoires.keySet()) {
-        if (stationsParcourues.contains(station)) {
-          continue;
-        }
-        int cout = etiquettesProvisoires.get(station);
-        if (cout < coutMin) {
-          coutMin = cout;
-          stationMin = station;
-        }
-      }
-      etiquettesProvisoires.remove(stationMin);
-
-      for (Troncon troncon : ensembleTronconsDepuisStationCourante) {
-        if (troncon.getArrivee().equals(stationMin) && troncon.getDepart().equals(stationCourante)) {
-          mapStationPrecedente.put(stationMin, troncon);
-        }
-      }
-
-      etiquettesDefinitives.put(stationMin, coutMin);
-      stationCourante = stationMin;
-    }
-
-    while (!stationCourante.equals(station1)) {
-      parcours.add(mapStationPrecedente.get(stationCourante));
-      stationCourante = mapStationPrecedente.get(stationCourante).getDepart();
-    }
-
-
-    long endTime = System.nanoTime();
-
-    System.out.println("temps: " + ((endTime - startTime)/1000) + " microsecondes");
-    printCheminMinimisantNombreTroncons(parcours);
-
   }
 }

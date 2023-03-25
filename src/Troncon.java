@@ -2,14 +2,14 @@ import java.time.Duration;
 
 public class Troncon {
     private Ligne ligne;
-    private String depart;
-    private String arrivee;
+    private Station stationDepart;
+    private Station stationArrivee;
     private int duree;
 
-    public Troncon(Ligne ligne, String depart, String arrivee, int duree) {
+    public Troncon(Ligne ligne, Station stationDepart, Station stationArrivee, int duree) {
         this.ligne = ligne;
-        this.depart = depart;
-        this.arrivee = arrivee;
+        this.stationDepart = stationDepart;
+        this.stationArrivee = stationArrivee;
         this.duree = duree;
     }
 
@@ -17,12 +17,12 @@ public class Troncon {
         return ligne;
     }
 
-    public String getDepart() {
-        return depart;
+    public Station getStationDepart() {
+        return stationDepart;
     }
 
-    public String getArrivee() {
-        return arrivee;
+    public Station getStationArrivee() {
+        return stationArrivee;
     }
 
     public int getDuree() {
@@ -32,8 +32,8 @@ public class Troncon {
     @Override
     public String toString() {
         return "Troncon [" +
-            "depart='" + depart + '\'' +
-            ", arrivee='" + arrivee + '\'' +
+            "depart=" + stationDepart +
+            ", arrivee=" + stationArrivee +
             ", duree=" + duree +
             ", ligne=" + ligne
             + "]";

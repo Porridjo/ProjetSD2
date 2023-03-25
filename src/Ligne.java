@@ -62,13 +62,13 @@ public class Ligne {
 
     @Override
     public String toString() {
-        return "Ligne{" +
-                "identifiant=" + identifiant +
-                ", numero=" + numero +
-                ", premierStation='" + premierStation + '\'' +
-                ", destination='" + destination + '\'' +
-                ", typeDeTransport='" + typeDeTransport + '\'' +
-                ", tempsDAttente=" + tempsDAttente +
-                '}';
+        return "Ligne [" +
+                "id=" + identifiant +
+                ", nom=" + numero +
+                ", source=" + premierStation +
+                ", destination=" + destination +
+                ", type=" + typeDeTransport +
+                ", attenteMoyenne=" + tempsDAttente +
+                ']';
     }
 }
